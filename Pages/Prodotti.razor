@@ -1,0 +1,59 @@
+@page "/products"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Lista di prodotti da Platzi Fake Store API</h1>
+
+@if (errorMessage != null)
+{
+    <div class="error-box">
+        <p>@errorMessage</p>
+        <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla Home</button>
+    </div>
+}
+else if (products != null)
+{
+    <ul>
+        @foreach (var products in products)
+        {
+            <li>
+                <a href="@($"/products/{products.Id}")">@products.Title</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No product found.</p>
+}
+
+@code {
+    private List<Products>? products;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Prova a recuperare la lista degli utenti
+            products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
+        }
+        catch (Exception ex)
+        {
+            // Se c'è un errore (ad esempio 404), imposta il messaggio di errore
+            errorMessage = "Si è verificato un errore durante il caricamento della lista degli utenti: " + ex.Message;
+        }
+    }
+
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+     public class Products
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
+
+}

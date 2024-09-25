@@ -1,0 +1,79 @@
+@page "/products/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Dettagli Prodotto</h3>
+
+@if (product == null && errorMessage == null)
+{
+    <p>Caricamento in corso...</p>
+}
+else if (errorMessage != null)
+{
+    <p class="text-danger">@errorMessage</p>
+    <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
+}
+else
+{
+    <p><strong>Titolo:</strong> @product.Title</p>
+    <p><strong>Prezzo:</strong> @product.Price</p>
+    <p><strong>Descrizione:</strong> @product.Description</p>
+
+    <h4>Categoria</h4>
+    <p><strong>Nome:</strong> @product.Category.Name</p>
+    <p><strong>Immagine:</strong> @product.Category.Image</p>
+
+    <h4>Immagini</h4>
+    <p><strong>Immagini:</strong> </p>
+
+    <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
+}
+
+@code {
+    private Product? product = null;
+    private string? errorMessage = null;
+
+    [Parameter] public int id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Recupera i dettagli dell'utente dall'API
+            product = await Http.GetFromJsonAsync<Product>($"https://api.escuelajs.co/api/v1/products/{id}");
+
+            if (product == null)
+            {
+                errorMessage = "Prodotto non trovato.";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Gestione degli errori
+            errorMessage = "Si è verificato un errore durante il caricamento dei dettagli del prodotto: " + ex.Message;
+        }
+    }
+
+    private void NavigateToHome()
+    {
+        // Naviga verso la homepage
+        NavigationManager.NavigateTo("/");
+    }
+
+        public class Product
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Price { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public Category Category { get; set; } = new Category();
+        //public Image[] { get; set; } = new Image();
+    }
+
+    public class Category
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Image { get; set; } = string.Empty;
+    }
+   
+}
