@@ -1,0 +1,59 @@
+@page "/users"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Lista degli Utenti</h1>
+
+@if (errorMessage != null)
+{
+    <div class="error-box">
+        <p>@errorMessage</p>
+        <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla Home</button>
+    </div>
+}
+else if (users != null)
+{
+    <ul>
+        @foreach (var user in users)
+        {
+            <li>
+                <a href="@($"/users/{user.Id}")">@user.Name</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No users found.</p>
+}
+
+@code {
+    private List<User>? users;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Prova a recuperare la lista degli utenti
+            users = await Http.GetFromJsonAsync<List<User>>("https://jsonplaceholder.typicode.com/users");
+        }
+        catch (Exception ex)
+        {
+            // Se c'è un errore (ad esempio 404), imposta il messaggio di errore
+            errorMessage = "Si è verificato un errore durante il caricamento della lista degli utenti: " + ex.Message;
+        }
+    }
+
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+     public class User
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+}
