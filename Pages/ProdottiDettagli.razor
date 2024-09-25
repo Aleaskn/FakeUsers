@@ -21,11 +21,13 @@ else
 
     <h4>Categoria</h4>
     <p><strong>Nome:</strong> @product.Category.Name</p>
-    <p><strong>Immagine:</strong> @product.Category.Image</p>
+    <p><strong>Immagine:</strong> <img src="@product.Category.Image" alt="@product.Category.Name" /></p>
 
     <h4>Immagini</h4>
-    <p><strong>Immagini:</strong> </p>
-
+    @foreach (var image in product.Images)
+    {
+       <img src="@image" alt="Immagine del prodotto" style="width: 100px; height: auto; margin-right: 5px;" />
+    }
     <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
 }
 
@@ -64,10 +66,10 @@ else
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string Price { get; set; } = string.Empty;
+        public int Price { get; set; }
         public string Description { get; set; } = string.Empty;
         public Category Category { get; set; } = new Category();
-        //public Image[] { get; set; } = new Image();
+        public string[] Images { get; set; } = Array.Empty<string>(); 
     }
 
     public class Category
