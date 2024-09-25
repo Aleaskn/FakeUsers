@@ -27,33 +27,120 @@ else
     <p>No product found.</p>
 }
 
+<h1>Aggiungi Nuovo Prodotto</h1>
+
+@if (!string.IsNullOrEmpty(validationMessage))
+{
+    <div class="error-box">
+        <p>@validationMessage</p>
+    </div>
+}
+
+<div class="form-group">
+    <label for="title">Titolo:</label>
+    <input type="text" id="title" @bind="newProduct.Title" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="price">Prezzo:</label>
+    <input type="number" id="price" @bind="newProduct.Price" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="description">Descrizione:</label>
+    <input type="text" id="description" @bind="newProduct.Description" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="categoryId">Categoria ID:</label>
+    <input type="number" id="categoryId" @bind="newProduct.CategoryId" class="form-control" />
+</div>
+
+<div class="form-group">
+    <label for="images">Immagine:</label>
+    <input type="text" id="images" @bind="newProduct.Images[0]" class="form-control" />
+</div>
+
+<button class="btn btn-success" @onclick="AddProduct">Aggiungi Prodotto</button>
+
+
 @code {
     private List<Products>? products;
     private string? errorMessage;
+    private string? validationMessage; // Variabile per errori di validazione dei campi
+
+    // Nuovo prodotto da aggiungere
+    private NewProduct newProduct = new NewProduct
+    {
+        Title = string.Empty,
+        Price = 0,
+        Description = string.Empty,
+        CategoryId = 1, // Imposta un valore di default che può essere cambiato dal form
+        Images = new List<string> { string.Empty }
+    };
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Prova a recuperare la lista degli utenti
+            // Recupera la lista dei prodotti
             products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
         }
         catch (Exception ex)
         {
-            // Se c'è un errore (ad esempio 404), imposta il messaggio di errore
-            errorMessage = "Si è verificato un errore durante il caricamento della lista degli utenti: " + ex.Message;
+            // Gestione degli errori
+            errorMessage = "Si è verificato un errore durante il caricamento della lista dei prodotti: " + ex.Message;
         }
     }
 
+    // Metodo per inviare il nuovo prodotto tramite POST
+    private async Task AddProduct()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://api.escuelajs.co/api/v1/products", newProduct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Se la POST ha successo, aggiorna la lista dei prodotti
+                products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
+                Console.WriteLine("Prodotto aggiunto con successo!");
+            }
+            else
+            {
+                // Mostra l'errore in caso di fallimento
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Errore durante l'invio del prodotto: {error}";
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            // Gestione degli errori
+            errorMessage = $"Errore durante la POST: {ex.Message}";
+        }
+    }
+
+    // per tornare alla Home tramite il bottone
     private void NavigateToHome()
     {
         NavigationManager.NavigateTo("/");
     }
 
-     public class Products
+    // Classe che rappresenta il prodotto per la POST
+    public class NewProduct
+    {
+        public string Title { get; set; }
+        public int Price { get; set; }
+        public string Description { get; set; }
+        public int CategoryId { get; set; }
+        public List<string> Images { get; set; }
+    }
+
+    // Classe che rappresenta il nome per le GET
+    public class Products
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
     }
-
 }
