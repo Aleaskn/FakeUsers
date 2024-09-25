@@ -1,0 +1,52 @@
+@page "/form"
+
+<h3>Inserisci il tuo nome</h3>
+
+<!-- Form per aggiungere nomi -->
+<div>
+    <input @bind="newName" placeholder="Inserisci il tuo nome" />
+    <button @onclick="AddName">Aggiungi Nome</button>
+</div>
+
+<!-- Visualizza la lista di nomi -->
+@if (names.Count > 0)
+{
+    <h4>Lista dei nomi:</h4>
+    <ul>
+        @foreach (var name in names)
+        {
+            <li>
+                @name
+                <button @onclick="() => RemoveName(name)">Rimuovi</button>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Nessun nome aggiunto ancora.</p>
+}
+
+@code {
+    // Variabile per memorizzare l'input del nome
+    private string newName = string.Empty;
+
+    // Lista dei nomi
+    private List<string> names = new List<string>();
+
+    // Aggiunge un nome alla lista
+    private void AddName()
+    {
+        if (!string.IsNullOrWhiteSpace(newName))
+        {
+            names.Add(newName);
+            newName = string.Empty; // Resetta il campo di input
+        }
+    }
+
+    // Rimuove un nome dalla lista
+    private void RemoveName(string name)
+    {
+        names.Remove(name);
+    }
+}
