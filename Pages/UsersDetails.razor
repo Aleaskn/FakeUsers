@@ -1,0 +1,104 @@
+@page "/users/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Dettagli Utente</h3>
+
+@if (user == null && errorMessage == null)
+{
+    <p>Caricamento in corso...</p>
+}
+else if (errorMessage != null)
+{
+    <p class="text-danger">@errorMessage</p>
+    <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
+}
+else
+{
+    <p><strong>Nome:</strong> @user.Name</p>
+    <p><strong>Username:</strong> @user.Username</p>
+    <p><strong>Email:</strong> @user.Email</p>
+    <p><strong>Telefono:</strong> @user.Phone</p>
+    <p><strong>Sito Web:</strong> <a href="http://@user.Website" target="_blank">@user.Website</a></p>
+
+    <h4>Indirizzo</h4>
+    <p>@user.Address.Street, @user.Address.Suite</p>
+    <p>@user.Address.City, @user.Address.Zipcode</p>
+    <p><strong>Coordinate:</strong> @user.Address.Geo.Lat, @user.Address.Geo.Lng</p>
+
+    <h4>Azienda</h4>
+    <p><strong>Nome:</strong> @user.Company.Name</p>
+    <p><strong>Slogan:</strong> @user.Company.CatchPhrase</p>
+    <p><strong>Settore:</strong> @user.Company.Bs</p>
+
+    <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
+}
+
+@code {
+    private User? user = null;
+    private string? errorMessage = null;
+
+    [Parameter] public int id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Recupera i dettagli dell'utente dall'API
+            user = await Http.GetFromJsonAsync<User>($"https://jsonplaceholder.typicode.com/users/{id}");
+
+            if (user == null)
+            {
+                errorMessage = "Utente non trovato.";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Gestione degli errori
+            errorMessage = "Si è verificato un errore durante il caricamento dei dettagli dell'utente: " + ex.Message;
+        }
+    }
+
+    private void NavigateToHome()
+    {
+        // Naviga verso la homepage
+        NavigationManager.NavigateTo("/");
+    }
+
+        public class User
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public Address Address { get; set; } = new Address();
+        public string Phone { get; set; } = string.Empty;
+        public string Website { get; set; } = string.Empty;
+        public Company Company { get; set; } = new Company();
+    }
+
+    public class Address
+    {
+        public string Street { get; set; } = string.Empty;
+        public string Suite { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Zipcode { get; set; } = string.Empty;
+        public Geo Geo { get; set; } = new Geo();
+    }
+
+    public class Geo
+    {
+        public string Lat { get; set; } = string.Empty;
+        public string Lng { get; set; } = string.Empty;
+    }
+
+    public class Company
+    {
+        public string Name { get; set; } = string.Empty;
+        public string CatchPhrase { get; set; } = string.Empty;
+        public string Bs { get; set; } = string.Empty;
+    }
+}
+
+
+
