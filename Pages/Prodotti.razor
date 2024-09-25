@@ -14,10 +14,10 @@
 else if (products != null)
 {
     <ul>
-        @foreach (var products in products)
+        @foreach (var product in products)
         {
             <li>
-                <a href="@($"/products/{products.Id}")">@products.Title</a>
+                <a href="@($"/products/{product.Id}")">@product.Title</a>
             </li>
         }
     </ul>
@@ -29,105 +29,135 @@ else
 
 <h1>Aggiungi Nuovo Prodotto</h1>
 
-@if (!string.IsNullOrEmpty(validationMessage))
-{
-    <div class="error-box">
-        <p>@validationMessage</p>
+<form @onsubmit="AddProduct" @onsubmit:preventDefault>
+    <div class="form-group">
+        <label for="title">Titolo:</label>
+        <input type="text" value="@newProduct.Title" class="form-control" @onchange="UpdateTitle" required/>
     </div>
-}
 
-<div class="form-group">
-    <label for="title">Titolo:</label>
-    <input type="text" id="title" @bind="newProduct.Title" class="form-control" />
-</div>
+    <div class="form-group">
+        <label for="price">Prezzo:</label>
+        <input type="number" value="@newProduct.Price" class="form-control" @onchange="UpdatePrice" required/>
+    </div>
 
-<div class="form-group">
-    <label for="price">Prezzo:</label>
-    <input type="number" id="price" @bind="newProduct.Price" class="form-control" />
-</div>
+    <div class="form-group">
+        <label for="description">Descrizione:</label>
+        <input type="text" value="@newProduct.Description" class="form-control" @onchange="UpdateDescription" required/>
+    </div>
 
-<div class="form-group">
-    <label for="description">Descrizione:</label>
-    <input type="text" id="description" @bind="newProduct.Description" class="form-control" />
-</div>
+    <div class="form-group">
+        <label for="categoryId">Categoria ID:</label>
+        <input name="category" type="number" value="@newProduct.CategoryId" class="form-control" @onchange="UpdateCategoryId" required/>
+    </div>
 
-<div class="form-group">
-    <label for="categoryId">Categoria ID:</label>
-    <input type="number" id="categoryId" @bind="newProduct.CategoryId" class="form-control" />
-</div>
+    <div class="form-group">
+        <label for="images">Immagine:</label>
+        <input type="text" value="@newProduct.Images[0]" class="form-control" @onchange="UpdateImage" required/>
+    </div> @*L'input per l'immagine ora legge direttamente il valore inserito dall'utente e lo aggiorna nel modello newProduct.Images*@
 
-<div class="form-group">
-    <label for="images">Immagine:</label>
-    <input type="text" id="images" @bind="newProduct.Images[0]" class="form-control" />
-</div>
-
-<button class="btn btn-success" @onclick="AddProduct">Aggiungi Prodotto</button>
-
+    <button class="btn btn-success" type="submit">Aggiungi Prodotto</button>
+</form>
 
 @code {
     private List<Products>? products;
     private string? errorMessage;
-    private string? validationMessage; // Variabile per errori di validazione dei campi
 
-    // Nuovo prodotto da aggiungere
     private NewProduct newProduct = new NewProduct
     {
         Title = string.Empty,
         Price = 0,
         Description = string.Empty,
-        CategoryId = 1, // Imposta un valore di default che può essere cambiato dal form
+        CategoryId = 1,
         Images = new List<string> { string.Empty }
     };
+
+    private void UpdateTitle(ChangeEventArgs e)
+    {
+        newProduct.Title = e.Value.ToString();
+    }
+
+    private void UpdateDescription(ChangeEventArgs e)
+    {
+        newProduct.Description = e.Value.ToString();
+    }
+
+    private void UpdatePrice(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int result))
+            newProduct.Price = result;
+        else
+            newProduct.Price = 0; 
+    }
+
+    private void UpdateCategoryId(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int result))
+            newProduct.CategoryId = result;
+        else
+            newProduct.CategoryId = 1; 
+    }
+
+    private void UpdateImage(ChangeEventArgs e) // La funzione verifica se l'URL dell'immagine è valido utilizzando Uri.IsWellFormedUriString() e aggiorna l'array Images solo se è valido.
+    {
+        var imageUrl = e.Value.ToString();
+        if (Uri.IsWellFormedUriString(imageUrl, UriKind.Absolute))
+        {
+            newProduct.Images[0] = imageUrl; // Aggiorna solo se l'URL è valido
+        } // L'input per l'immagine ora legge direttamente il valore inserito dall'utente e lo aggiorna nel modello newProduct.Images
+        else
+        {
+            errorMessage = "L'URL dell'immagine non è valido."; // Mostra un messaggio di errore se non è valido
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Recupera la lista dei prodotti
             products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
         }
         catch (Exception ex)
         {
-            // Gestione degli errori
             errorMessage = "Si è verificato un errore durante il caricamento della lista dei prodotti: " + ex.Message;
         }
     }
 
-    // Metodo per inviare il nuovo prodotto tramite POST
     private async Task AddProduct()
     {
         try
         {
+            // 
+            if (newProduct.Images.Any(image => !Uri.IsWellFormedUriString(image, UriKind.Absolute)))
+            {
+                errorMessage = "Uno o più URL dell'immagine non sono validi.";
+                return; 
+            }
+
             var response = await Http.PostAsJsonAsync("https://api.escuelajs.co/api/v1/products", newProduct);
 
             if (response.IsSuccessStatusCode)
             {
-                // Se la POST ha successo, aggiorna la lista dei prodotti
                 products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
                 Console.WriteLine("Prodotto aggiunto con successo!");
             }
             else
             {
-                // Mostra l'errore in caso di fallimento
                 var error = await response.Content.ReadAsStringAsync();
                 errorMessage = $"Errore durante l'invio del prodotto: {error}";
-                
             }
         }
         catch (Exception ex)
         {
-            // Gestione degli errori
             errorMessage = $"Errore durante la POST: {ex.Message}";
         }
     }
 
-    // per tornare alla Home tramite il bottone
+    // metodo per bottone per tornare alla home
     private void NavigateToHome()
     {
         NavigationManager.NavigateTo("/");
     }
 
-    // Classe che rappresenta il prodotto per la POST
     public class NewProduct
     {
         public string Title { get; set; }
@@ -137,7 +167,6 @@ else
         public List<string> Images { get; set; }
     }
 
-    // Classe che rappresenta il nome per le GET
     public class Products
     {
         public int Id { get; set; }
