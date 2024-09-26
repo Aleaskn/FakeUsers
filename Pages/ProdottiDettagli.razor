@@ -11,39 +11,60 @@
 else if (errorMessage != null)
 {
     <div class="error-box">
-    <p class="text-danger">@errorMessage</p>
     <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
     </div>
 }
-else
-{
-    <p><strong>Titolo:</strong> @product.Title</p>
-    <p><strong>Prezzo:</strong> @product.Price</p>
-    <p><strong>Descrizione:</strong> @product.Description</p>
+    else {
+     @if (isEditMode) {
+         <div>
+               <label for="title">Titolo:</label>
+              <input id="title" value=@product.Title class="form-control" @onchange="UpdateTitle" required/> @*Se si preferisce utilizzare l'attributo value invece del binding a doppio senso con @bind, è fondamentale gestire correttamente il recupero e l'aggiornamento dei valori dell'input. Usando value, il campo di input non si aggiornerà automaticamente quando il valore dell'oggetto product cambia, quindi dovrai gestire manualmente l'evento oninput o onchange per aggiornare il tuo oggetto.*@
 
-    <h4>Categoria</h4>
-    <p><strong>Nome:</strong> @product.Category.Name</p>
-    <p><strong>Immagine:</strong> <img src="@product.Category.Image" alt="@product.Category.Name" /></p>
+              <label for="price">Prezzo:</label>
+             <input id="price" value=@product.Price type="number" class="form-control" @onchange="UpdatePrice" required/>
 
-    <h4>Immagini</h4>
-    @foreach (var image in product.Images)
+             <button class="btn btn-success" @onclick="SaveChanges">Conferma Modifiche</button>
+             <button class="btn btn-secondary" @onclick="CancelChanges">Annulla</button>
+         </div>
+    }
+ else {
+     <p><strong>Titolo:</strong> @product.Title</p>
+     <p><strong>Prezzo:</strong> @product.Price</p>
+     <p><strong>Descrizione:</strong> @product.Description</p>
+
+     <h4>Categoria</h4>
+     <p><strong>Nome:</strong> @product.Category.Name</p>
+     <p><strong>Immagine:</strong> <img src="@product.Category.Image" alt="@product.Category.Name" /></p>
+
+     <h4>Immagini</h4>
+     @foreach (var image in product.Images)
+     {
+         <img src="@image" alt="Immagine del prodotto" style="width: 100px; height: auto; margin-right: 5px;" />
+      }
+     <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
+    }
+}
+
+    @*bottone per la PUT dell'oggetto*@
+    <h3>Modifica le specifiche del prodotto</h3>
+     @if (!string.IsNullOrEmpty(errorMessage))
     {
-       <img src="@image" alt="Immagine del prodotto" style="width: 100px; height: auto; margin-right: 5px;" />
-}
-    <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
-}
+     <div class="alert alert-danger">
+            @errorMessage
+     </div>
+    }
+    <button class="btn btn-primary" @onclick="EnableEditMode">Modifica Specifiche</button>
+
 
     @*bottone per la DELETE dell'oggetto*@
     <h3>Elimina Prodotto</h3>
-
     <button class="btn btn-danger" @onclick="DeleteProduct">Elimina Prodotto</button>
-
-    @*bottone per la *@
-
-
+    
 @code {
     private Product? product = null;
     private string? errorMessage = null;
+    private bool isEditMode = false; // Modalità modifica
+
 
     [Parameter] public int id { get; set; }
 
@@ -63,6 +84,79 @@ else
         {
             // Gestione degli errori
             errorMessage = "Si è verificato un errore durante il caricamento dei dettagli del prodotto: " + ex.Message;
+        }
+    }
+
+    // Modifica il prodotto tramite l'abilitazione della modalità di modifica al click del pulsante apposito e viceversa
+        private void EnableEditMode()
+    {
+        errorMessage = null; // Reset del messaggio di errore quando si entra in modalità di modifica
+        // Attiva la modalità di modifica
+        isEditMode = true;
+    }
+
+    private void CancelChanges()
+    {
+        // Disattiva la modalità di modifica
+        errorMessage = null; // resetti il messaggio di errore 
+        isEditMode = false;
+    }
+
+
+    private void UpdateTitle(ChangeEventArgs e)
+    {
+        product.Title = e.Value.ToString();
+    }
+
+    private void UpdatePrice(ChangeEventArgs e) {
+        if (int.TryParse(e.Value.ToString(), out int result))
+               product.Price = result;
+         else
+              product.Price = 0;    
+    }
+
+    private async Task SaveChanges()
+    {
+        try
+        {
+            if (product == null)
+            {
+                errorMessage = "Impossibile trovare il prodotto";
+                return;
+            }
+
+            // Validazione dei campi obbligatori
+            if (string.IsNullOrEmpty(product.Title) || product.Price <= 0)
+            {
+                errorMessage = "Assicurati che tutti i campi siano compilati correttamente. Clicca di nuovo su 'Modifica Specifiche'!";
+                return;
+            }
+
+            // Creazione di un oggetto con i campi modificati
+            var updatedProduct = new
+         {
+             title = product.Title,
+              price = product.Price
+         };
+
+            // Invia una PUT all'API per aggiornare il prodotto
+            var response = await Http.PutAsJsonAsync($"https://api.escuelajs.co/api/v1/products/{id}", updatedProduct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Se il salvataggio va a buon fine, ricarica il prodotto per conferma
+                product = await Http.GetFromJsonAsync<Product>($"https://api.escuelajs.co/api/v1/products/{product.Id}");
+                // Modifiche salvate correttamente allora torna alla modalità di modifica disattivata
+                isEditMode = false; // per tornare alla modalità visualizzazione e finire quella di modifica
+            }
+            else
+            {
+                errorMessage = "Errore durante il salvataggio delle modifiche.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Si è verificato un errore durante il salvataggio delle modifiche: " + ex.Message;
         }
     }
 
