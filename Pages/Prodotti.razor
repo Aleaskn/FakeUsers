@@ -29,7 +29,7 @@ else
 
 <h1>Aggiungi Nuovo Prodotto</h1>
 
-<form @onsubmit="AddProduct" @onsubmit:preventDefault>
+<form @onsubmit="AddProduct" @onsubmit:preventDefault> @*per prevenire il refresh della pagina*@
     <div class="form-group">
         <label for="title">Titolo:</label>
         <input type="text" value="@newProduct.Title" class="form-control" @onchange="UpdateTitle" required/>
