@@ -11,6 +11,7 @@
 else if (errorMessage != null)
 {
     <div class="error-box">
+         @errorMessage
     <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
     </div>
 }
@@ -47,12 +48,6 @@ else if (errorMessage != null)
 
     @*bottone per la PUT dell'oggetto*@
     <h3>Modifica le specifiche del prodotto</h3>
-     @if (!string.IsNullOrEmpty(errorMessage))
-    {
-     <div class="alert alert-danger">
-            @errorMessage
-     </div>
-    }
     <button class="btn btn-primary" @onclick="EnableEditMode">Modifica Specifiche</button>
 
 
