@@ -114,10 +114,12 @@ else
     {
         try
         {
-            products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
+            products = await Http.GetFromJsonAsync<List<Products>>("products"); // collegamento con API server, mentre prima vi era le API esterne
+                Console.WriteLine($"Prodotti recuperati: {products?.Count}");
         }
         catch (Exception ex)
         {
+            Console.WriteLine("Error: " + ex.Message);
             errorMessage = "Si è verificato un errore durante il caricamento della lista dei prodotti: " + ex.Message;
         }
     }
@@ -126,18 +128,17 @@ else
     {
         try
         {
-            // 
             if (newProduct.Images.Any(image => !Uri.IsWellFormedUriString(image, UriKind.Absolute)))
             {
                 errorMessage = "Uno o più URL dell'immagine non sono validi.";
                 return; 
             }
 
-            var response = await Http.PostAsJsonAsync("https://api.escuelajs.co/api/v1/products", newProduct);
+            var response = await Http.PostAsJsonAsync("products", newProduct); // route nella quale avviene il tutto
 
             if (response.IsSuccessStatusCode)
             {
-                products = await Http.GetFromJsonAsync<List<Products>>("https://api.escuelajs.co/api/v1/products");
+                products = await Http.GetFromJsonAsync<List<Products>>("products");
                 Console.WriteLine("Prodotto aggiunto con successo!");
             }
             else

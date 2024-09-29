@@ -67,8 +67,8 @@ else if (errorMessage != null)
     {
         try
         {
-            // Recupera i dettagli dell'utente dall'API
-            product = await Http.GetFromJsonAsync<Product>($"https://api.escuelajs.co/api/v1/products/{id}");
+            // Recupera i dettagli del prodotto dall'API
+            product = await Http.GetFromJsonAsync<Product>($"products/{id}"); // collegamento API server, prima erano le API esterne
 
             if (product == null)
             {
@@ -135,12 +135,12 @@ else if (errorMessage != null)
          };
 
             // Invia una PUT all'API per aggiornare il prodotto
-            var response = await Http.PutAsJsonAsync($"https://api.escuelajs.co/api/v1/products/{id}", updatedProduct);
+            var response = await Http.PutAsJsonAsync($"products/{id}", updatedProduct); // collegamento API server, prima erano le API esterne
 
             if (response.IsSuccessStatusCode)
             {
                 // Se il salvataggio va a buon fine, ricarica il prodotto per conferma
-                product = await Http.GetFromJsonAsync<Product>($"https://api.escuelajs.co/api/v1/products/{product.Id}");
+                product = await Http.GetFromJsonAsync<Product>($"products/{product.Id}");
                 // Modifiche salvate correttamente allora torna alla modalità di modifica disattivata
                 isEditMode = false; // per tornare alla modalità visualizzazione e finire quella di modifica
             }
@@ -160,8 +160,8 @@ else if (errorMessage != null)
     {
         try
         {
-            // Esegui la DELETE per eliminare il prodotto
-            var response = await Http.DeleteAsync($"https://api.escuelajs.co/api/v1/products/{id}"); // Http.DeleteAsync invia una richiesta di DELETE all'API e la richiesta viene inviata all'URL corrispondente al prodotto identificato dall'id presente nel percorso.
+            // Esegui la DELETE per eliminare il prodotto                                               collegamento API server, prima erano le API esterne
+            var response = await Http.DeleteAsync($"products/{id}"); // Http.DeleteAsync invia una richiesta di DELETE all'API e la richiesta viene inviata all'URL corrispondente al prodotto identificato dall'id presente nel percorso.
 
             if (response.IsSuccessStatusCode)
             {
