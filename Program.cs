@@ -1,7 +1,8 @@
+using Blazored.LocalStorage;
 using FakeUsers;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.Net.Http;
-using System.Net.Http.Json;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -11,5 +12,14 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 // Registra ProductService nel contenitore DI
 builder.Services.AddScoped<ProductService>();
+
+
+// Registrazione del CustomAuthStateProvider come provider di autenticazione
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddBlazoredLocalStorage();
+
+// Configura l'autenticazione
+builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();

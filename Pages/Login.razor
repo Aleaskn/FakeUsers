@@ -1,0 +1,59 @@
+@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<h3>Login</h3>
+
+<div>
+    <label>Email:</label>
+    <input @bind="username" />
+</div>
+<div>
+    <label>Password:</label>
+    <input type="password" @bind="password" />
+</div>
+
+<button @onclick="Loginn">Login</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p> @*mettere dentro un div class= error-box*@
+}
+
+@code {
+    private string username;
+    private string password;
+    private string errorMessage;
+
+    private async Task Loginn() // non scrivo 'Login' perché il nome del metodo Login() e il nome del componente Login.razor coinciderebbero. 
+    {                          // In C#, non è consentito avere un membro (in questo caso, un metodo) con lo stesso nome della classe o del tipo contenente.
+        var loginData = new { Username = username, Password = password };
+        var response = await Http.PostAsJsonAsync("/login", loginData); // Chiamata all'endpoint del backend
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseData = await response.Content.ReadFromJsonAsync<JwtTokenResponse>(); // Il token viene salvato nel localStorage, e lo stato di autenticazione viene aggiornato tramite AuthStateProvider
+
+            var token = responseData.Access_Token;
+
+            // Salva il token nel localStorage e aggiorna lo stato dell'utente autenticato
+            await LocalStorage.SetItemAsync("authToken", token); // Blazor non supporta direttamente la SecureStorage, ma puoi utilizzare il localStorage o il sessionStorage per gestire il token lato client.
+            AuthStateProvider.MarkUserAsAuthenticated(token); // gestisce lo stato di autenticazione (ad esempio, salvando il token e notificando la modifica dello stato dell'utente)
+
+            // Dopo aver fatto il login ci si ritroverà autenticati alla home
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Login failed!";
+        }
+    }
+
+    private class JwtTokenResponse
+    {
+        public string Access_Token { get; set; }
+        public string Refresh_Token { get; set; }
+    }
+}

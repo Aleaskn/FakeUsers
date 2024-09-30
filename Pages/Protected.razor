@@ -1,0 +1,12 @@
+@page "/protected"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Benvenuto nella pagina protetta!</h3>
+    </Authorized>
+    <NotAuthorized>
+        <p>Non sei autorizzato a visualizzare questa pagina. Effettua il login.</p>
+    </NotAuthorized>
+</AuthorizeView>

@@ -36,12 +36,11 @@ else
         try
         {
             // Prova a recuperare la lista degli utenti
-            users = await Http.GetFromJsonAsync<List<User>>("https://jsonplaceholder.typicode.com/users");
+            users = await Http.GetFromJsonAsync<List<User>>("https://localhost:5093/users");
         }
-        catch (Exception ex)
+        catch (HttpRequestException httpEx)
         {
-            // Se c'è un errore (ad esempio 404), imposta il messaggio di errore
-            errorMessage = "Si è verificato un errore durante il caricamento della lista degli utenti: " + ex.Message;
+             errorMessage = $"Errore HTTP: {httpEx.Message}";
         }
     }
 
@@ -54,6 +53,10 @@ else
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Avatar { get; set; }
+        public string Role { get; set; }
     }
 
 }

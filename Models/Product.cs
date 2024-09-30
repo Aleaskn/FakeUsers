@@ -1,4 +1,3 @@
-// Models/Product.cs
 using System.Text.Json.Serialization;
 
 public class Product

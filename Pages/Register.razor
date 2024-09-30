@@ -1,0 +1,63 @@
+@page "/register"
+@inject HttpClient Http
+
+@*l'utente inserirà i propri dati, e questi verranno inviati al backend tramite una richiesta HTTP POST*@
+
+<h3>Register</h3>
+
+<EditForm Model="newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name:</label>
+        <InputText @bind-Value="newUser.Name" />
+    </div>
+
+    <div>
+        <label>Email:</label>
+        <InputText @bind-Value="newUser.Email" />
+    </div>
+
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="newUser.Password" type="password" />
+    </div>
+
+    <div>
+        <label>Avatar URL:</label>
+        <InputText @bind-Value="newUser.Avatar" />
+    </div>
+
+    <button type="submit">Register</button> @*cambiare il tipo di bottone, lo stile tipo succesful*@
+</EditForm>
+
+@*La funzione HandleValidSubmit invia una richiesta HTTP POST al backend utilizzando il metodo PostAsJsonAsync fornito da HttpClient*@
+
+@code {
+    private UserRegistration newUser = new UserRegistration();
+
+    private async Task HandleValidSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("/users", newUser);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Registrazione riuscita
+            Console.WriteLine("User registered successfully!");
+        }
+        else
+        {
+            // Gestisci eventuali errori di registrazione
+            Console.WriteLine("Failed to register user.");
+        }
+    }
+
+    public class UserRegistration
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Avatar { get; set; }
+    }
+}

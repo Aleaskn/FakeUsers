@@ -1,4 +1,3 @@
-// Models/Category.cs
 using System.Text.Json.Serialization;
 
 public class Category

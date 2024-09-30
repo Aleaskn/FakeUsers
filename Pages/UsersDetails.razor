@@ -15,21 +15,12 @@ else if (errorMessage != null)
 }
 else
 {
+    <p><strong>Id:</strong> @user.Id</p>
     <p><strong>Nome:</strong> @user.Name</p>
-    <p><strong>Username:</strong> @user.Username</p>
     <p><strong>Email:</strong> @user.Email</p>
-    <p><strong>Telefono:</strong> @user.Phone</p>
-    <p><strong>Sito Web:</strong> <a href="http://@user.Website" target="_blank">@user.Website</a></p>
-
-    <h4>Indirizzo</h4>
-    <p>@user.Address.Street, @user.Address.Suite</p>
-    <p>@user.Address.City, @user.Address.Zipcode</p>
-    <p><strong>Coordinate:</strong> @user.Address.Geo.Lat, @user.Address.Geo.Lng</p>
-
-    <h4>Azienda</h4>
-    <p><strong>Nome:</strong> @user.Company.Name</p>
-    <p><strong>Slogan:</strong> @user.Company.CatchPhrase</p>
-    <p><strong>Settore:</strong> @user.Company.Bs</p>
+    <p><strong>Password:</strong> @user.Password</p>
+    <p><strong>Ruolo:</strong> @user.Role</p>
+    <p><strong>Avatar:</strong> <img src="@user.Avatar" /></p>
 
     <button class="btn btn-primary" @onclick="NavigateToHome">Torna alla home</button>
 }
@@ -45,7 +36,7 @@ else
         try
         {
             // Recupera i dettagli dell'utente dall'API
-            user = await Http.GetFromJsonAsync<User>($"https://jsonplaceholder.typicode.com/users/{id}");
+            user = await Http.GetFromJsonAsync<User>($"https://localhost:5093/users/{id}");
 
             if (user == null)
             {
@@ -69,35 +60,12 @@ else
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public Address Address { get; set; } = new Address();
-        public string Phone { get; set; } = string.Empty;
-        public string Website { get; set; } = string.Empty;
-        public Company Company { get; set; } = new Company();
+        public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = "customer";
+        public string Avatar { get; set; } = string.Empty;
     }
 
-    public class Address
-    {
-        public string Street { get; set; } = string.Empty;
-        public string Suite { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Zipcode { get; set; } = string.Empty;
-        public Geo Geo { get; set; } = new Geo();
-    }
-
-    public class Geo
-    {
-        public string Lat { get; set; } = string.Empty;
-        public string Lng { get; set; } = string.Empty;
-    }
-
-    public class Company
-    {
-        public string Name { get; set; } = string.Empty;
-        public string CatchPhrase { get; set; } = string.Empty;
-        public string Bs { get; set; } = string.Empty;
-    }
 }
 
 
